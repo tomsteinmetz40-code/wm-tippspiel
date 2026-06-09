@@ -549,4 +549,8 @@ def datum_filter(s):
         return s or "–"
     return dt.strftime("%a, %d.%m.%Y %H:%M")
 
+if __name__ == "__main__":
+    init_db()
+    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run()
 
