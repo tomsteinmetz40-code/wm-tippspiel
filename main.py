@@ -550,5 +550,3 @@ def datum_filter(s):
     return dt.strftime("%a, %d.%m.%Y %H:%M")
 
 
-if __name__ == "__main__":
-    app.run()
