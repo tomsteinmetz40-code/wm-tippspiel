@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}WM Tippspiel{% endblock %}
+{% block content %}
+
+{% set offene   = spiele | selectattr("tore_heim", "none") | list %}
+{% set beendet  = spiele | rejectattr("tore_heim", "none") | list %}
+
+{# ── Tippformular (offene Spiele) ─────────────────────────────────────── #}
+<h1>Tipps Abgeben</h1>
+
+{% if offene %}
+<form method="post" class="bulk-form">
+    <div class="name-bar">
+        <div class="name-grid">
+            <label>
+                Vorname
+                <input type="text" name="vorname" required maxlength="40" placeholder="z.B. Max" autofocus>
+            </label>
+            <label>
+                Nachname
+                <input type="text" name="nachname" required maxlength="40" placeholder="z.B. Mustermann">
+            </label>
+            {% if klassen %}
+            <label class="span-full">
+                Klasse
+                <select name="klasse" required>
+                    <option value="">– Klasse auswählen –</option>
+                    {% for k in klassen %}
+                    <option value="{{ k.name }}">{{ k.name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="games">
+        {% for s in offene %}
+        <div class="game-row">
+            <div class="game-team team-left">{{ s.team_heim }}</div>
+            <div class="counter">
+                <button type="button" class="btn-counter" data-target="tipp_heim_{{ s.id }}" data-delta="-1">−</button>
+                <input type="number" id="tipp_heim_{{ s.id }}" name="tipp_heim_{{ s.id }}" min="0" max="99" value="0" inputmode="numeric">
+                <button type="button" class="btn-counter" data-target="tipp_heim_{{ s.id }}" data-delta="1">+</button>
+            </div>
+            <div class="colon">:</div>
+            <div class="counter">
+                <button type="button" class="btn-counter" data-target="tipp_gast_{{ s.id }}" data-delta="-1">−</button>
+                <input type="number" id="tipp_gast_{{ s.id }}" name="tipp_gast_{{ s.id }}" min="0" max="99" value="0" inputmode="numeric">
+                <button type="button" class="btn-counter" data-target="tipp_gast_{{ s.id }}" data-delta="1">+</button>
+            </div>
+            <div class="game-team team-right">{{ s.team_gast }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="submit-bar">
+        <button type="submit" class="btn btn-large">Alle Tipps abschicken</button>
+    </div>
+</form>
+{% elif not spiele %}
+<p class="empty">Aktuell sind keine Spiele eingetragen.</p>
+{% else %}
+<p class="empty">Alle Spiele sind bereits beendet – keine offenen Tipps mehr möglich.</p>
+{% endif %}
+
+{# ── Abgeschlossene Spiele ────────────────────────────────────────────── #}
+{% if beendet %}
+<h2 style="margin-top:2rem">Abgeschlossene Spiele</h2>
+<div class="games">
+    {% for s in beendet %}
+    <div class="game-row game-row--beendet">
+        <div class="game-team team-left">{{ s.team_heim }}</div>
+        <div class="ergebnis-badge">
+            <span class="ergebnis-zahl">{{ s.tore_heim }}</span>
+            <span class="colon">:</span>
+            <span class="ergebnis-zahl">{{ s.tore_gast }}</span>
+        </div>
+        <div class="game-team team-right">{{ s.team_gast }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script>
+document.querySelectorAll('.btn-counter').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var input = document.getElementById(btn.dataset.target);
+        if (!input) return;
+        var v = parseInt(input.value || '0', 10);
+        if (isNaN(v)) v = 0;
+        v += parseInt(btn.dataset.delta, 10);
+        if (v < 0) v = 0;
+        if (v > 99) v = 99;
+        input.value = v;
+    });
+});
+</script>
+{% endblock %}

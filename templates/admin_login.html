@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Admin-Login · WM Tippspiel{% endblock %}
+{% block content %}
+<h1>Admin-Bereich</h1>
+<form method="post" class="tipp-form">
+    <label>
+        Dein Name
+        <input type="text" name="admin_name" required autofocus maxlength="40" placeholder="z.B. Max Mustermann">
+    </label>
+    <label>
+        Passwort
+        <input type="password" name="passwort" required placeholder="Admin- oder Manager-Passwort">
+    </label>
+    <button type="submit" class="btn">Anmelden</button>
+</form>
+{% endblock %}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{% block description %}Tippe auf WM-Spiele, verfolge die Rangliste deiner Klasse und fieber mit – das kostenlose WM Tippspiel für Schulen und Gruppen.{% endblock %}">
+    <title>{% block title %}WM Tippspiel{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container nav">
+            <a class="brand" href="{{ url_for('index') }}">WM Tippspiel</a>
+            <nav>
+                <a href="{{ url_for('index') }}">Spiele</a>
+                <a href="{{ url_for('klassen_rangliste') }}">Klassen-Rangliste</a>
+                {% if session.rolle %}
+                    <a href="{{ url_for('rangliste') }}">Rangliste</a>
+                {% endif %}
+                <a href="{{ url_for('admin') }}">Admin</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flashes">
+                    {% for category, msg in messages %}
+                        <div class="flash flash-{{ category }}">{{ msg }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+            <small>WM Tippspiel · 1 Punkt für exaktes Ergebnis</small>
+        </div>
+    </footer>
+</body>
+</html>

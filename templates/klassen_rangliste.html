@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Klassen-Rangliste · WM Tippspiel{% endblock %}
+{% block content %}
+<h1>Klassen-Rangliste</h1>
+{% if ergebnis %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Klasse</th>
+            <th>Punkte</th>
+            <th>Teilnehmer</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in ergebnis %}
+        <tr class="{% if loop.index == 1 %}gold{% elif loop.index == 2 %}silber{% elif loop.index == 3 %}bronze{% endif %}">
+            <td>{{ loop.index }}</td>
+            <td><strong>{{ r.klasse }}</strong></td>
+            <td><strong>{{ r.punkte }}</strong></td>
+            <td>{{ r.mitglieder }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="empty">Noch keine Klassen oder Tipps vorhanden.</p>
+{% endif %}
+{% endblock %}

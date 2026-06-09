@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Tipp abgeben · {{ spiel.team_heim }} – {{ spiel.team_gast }}{% endblock %}
+{% block content %}
+<h1>{{ spiel.team_heim }} <small>vs</small> {{ spiel.team_gast }}</h1>
+
+
+<form method="post" class="tipp-form">
+    <label>
+        Dein Name
+        <input type="text" name="spieler" required maxlength="40" placeholder="z.B. Max Mustermann">
+    </label>
+    <div class="score-input">
+        <label>
+            {{ spiel.team_heim }}
+            <input type="number" name="tipp_heim" min="0" max="99" required value="0">
+        </label>
+        <span class="colon">:</span>
+        <label>
+            {{ spiel.team_gast }}
+            <input type="number" name="tipp_gast" min="0" max="99" required value="0">
+        </label>
+    </div>
+    <button type="submit" class="btn">Tipp speichern</button>
+    <p class="hint">Bestehender Tipp wird mit gleichem Namen überschrieben.</p>
+</form>
+
+<h2>Abgegebene Tipps</h2>
+{% if tipps %}
+<table class="table">
+    <thead><tr><th>Spieler</th><th>Tipp</th></tr></thead>
+    <tbody>
+    {% for t in tipps %}
+        <tr><td>{{ t.spieler }}</td><td>{{ t.tipp_heim }} : {{ t.tipp_gast }}</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="empty">Noch keine Tipps abgegeben.</p>
+{% endif %}
+
+<p><a href="{{ url_for('index') }}">← Zurück</a></p>
+{% endblock %}

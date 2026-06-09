@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block title %}Admin · WM Tippspiel{% endblock %}
+{% block content %}
+<div class="admin-header">
+    <div>
+        <h1>Admin-Panel</h1>
+        <p class="meta">Angemeldet als <strong>{{ admin_name }}</strong>
+            <span class="rolle-badge rolle-{{ rolle }}">{{ "Haupt-Admin" if rolle == "admin" else "Manager" }}</span>
+        </p>
+    </div>
+    <form method="post" action="{{ url_for('admin_logout') }}">
+        <button class="btn btn-secondary" type="submit">Abmelden</button>
+    </form>
+</div>
+
+{# ── Klassen (admin + manager) ────────────────────────────────────────────── #}
+<section class="card">
+    <h2>Klassen verwalten</h2>
+    <form method="post" class="tipp-form">
+        <input type="hidden" name="aktion" value="klasse_anlegen">
+        <label>Klassenname <input type="text" name="klasse_name" required maxlength="40" placeholder="z.B. 10a"></label>
+        <button type="submit" class="btn">Klasse anlegen</button>
+    </form>
+    {% if klassen %}
+    <table class="table" style="margin-top:12px">
+        <thead><tr><th>Klasse</th><th>Aktion</th></tr></thead>
+        <tbody>
+        {% for k in klassen %}
+        <tr>
+            <td>{{ k.name }}</td>
+            <td>
+                <form method="post" class="inline-form" onsubmit="return confirm('Klasse {{ k.name }} löschen?');">
+                    <input type="hidden" name="aktion" value="klasse_loeschen">
+                    <input type="hidden" name="klasse_id" value="{{ k.id }}">
+                    <button class="btn btn-danger btn-small" type="submit">Löschen</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty" style="margin-top:10px">Noch keine Klassen angelegt.</p>
+    {% endif %}
+</section>
+
+{# ── Spiel anlegen (admin + manager) ─────────────────────────────────────── #}
+<section class="card">
+    <h2>Neues Spiel anlegen</h2>
+    <form method="post" class="tipp-form">
+        <input type="hidden" name="aktion" value="spiel_anlegen">
+        <label>Heim-Team <input type="text" name="team_heim" required maxlength="40"></label>
+        <label>Gast-Team <input type="text" name="team_gast" required maxlength="40"></label>
+        <button type="submit" class="btn">Spiel anlegen</button>
+    </form>
+</section>
+
+{# ── Spiele verwalten (admin + manager) ───────────────────────────────────── #}
+<section>
+    <h2>Spiele verwalten</h2>
+    {% if spiele %}
+    <input type="search" class="search-input" data-search-table="spiele-table" placeholder="Spiele suchen…">
+    <table class="table" id="spiele-table">
+        <thead>
+            <tr><th>ID</th><th>Begegnung</th><th>Ergebnis</th><th>Aktion</th></tr>
+        </thead>
+        <tbody>
+        {% for s in spiele %}
+            <tr>
+                <td>{{ s.id }}</td>
+                <td>{{ s.team_heim }} – {{ s.team_gast }}</td>
+                <td>
+                    <form method="post" class="inline-form">
+                        <input type="hidden" name="aktion" value="ergebnis_eintragen">
+                        <input type="hidden" name="spiel_id" value="{{ s.id }}">
+                        <input type="number" name="tore_heim" min="0" max="99" value="{{ s.tore_heim if s.tore_heim is not none else '' }}" required>
+                        :
+                        <input type="number" name="tore_gast" min="0" max="99" value="{{ s.tore_gast if s.tore_gast is not none else '' }}" required>
+                        <button class="btn btn-small" type="submit">Speichern</button>
+                    </form>
+                </td>
+                <td>
+                    <form method="post" class="inline-form" onsubmit="return confirm('Spiel und alle Tipps löschen?');">
+                        <input type="hidden" name="aktion" value="spiel_loeschen">
+                        <input type="hidden" name="spiel_id" value="{{ s.id }}">
+                        <button class="btn btn-danger btn-small" type="submit">Löschen</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty">Noch keine Spiele angelegt.</p>
+    {% endif %}
+</section>
+
+{# ── Admin-only sections ───────────────────────────────────────────────────── #}
+{% if rolle == "admin" %}
+
+<section>
+    <h2>Konten ({{ spieler_liste|length }})</h2>
+    {% if spieler_liste %}
+    <input type="search" class="search-input" data-search-table="konten-table" placeholder="Konten suchen…">
+    <table class="table" id="konten-table">
+        <thead>
+            <tr><th>Spieler</th><th>Klasse</th><th>Punkte</th><th>Tipps</th><th>Letzter Tipp</th><th>Aktion</th></tr>
+        </thead>
+        <tbody>
+        {% for sp in spieler_liste %}
+            <tr>
+                <td>{{ sp.spieler }}</td>
+                <td>{{ sp.klasse or "–" }}</td>
+                <td><strong>{{ sp.punkte }}</strong></td>
+                <td>{{ sp.anzahl }}</td>
+                <td>{{ sp.letzter|datum }}</td>
+                <td>
+                    <form method="post" class="inline-form" onsubmit="return confirm('Konto {{ sp.spieler }} löschen?');">
+                        <input type="hidden" name="aktion" value="spieler_loeschen">
+                        <input type="hidden" name="spieler" value="{{ sp.spieler }}">
+                        <button class="btn btn-danger btn-small" type="submit">Löschen</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty">Noch keine Spieler.</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Alle Tipps ({{ alle_tipps|length }})</h2>
+    {% if alle_tipps %}
+    <input type="search" class="search-input" data-search-table="tipps-table" placeholder="Tipps suchen…">
+    <table class="table" id="tipps-table">
+        <thead>
+            <tr><th>Zeit</th><th>Spieler</th><th>Klasse</th><th>Begegnung</th><th>Tipp</th><th>Ergebnis</th></tr>
+        </thead>
+        <tbody>
+        {% for t in alle_tipps %}
+            <tr>
+                <td>{{ t.abgegeben|datum }}</td>
+                <td>{{ t.spieler }}</td>
+                <td>{{ t.klasse or "–" }}</td>
+                <td>{{ t.team_heim }} – {{ t.team_gast }}</td>
+                <td>{{ t.tipp_heim }} : {{ t.tipp_gast }}</td>
+                <td>{% if t.tore_heim is not none %}{{ t.tore_heim }} : {{ t.tore_gast }}{% else %}<em>offen</em>{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty">Noch keine Tipps abgegeben.</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Angemeldete Admins & Manager</h2>
+    {% if admin_liste %}
+    <input type="search" class="search-input" data-search-table="admin-table" placeholder="Suchen…">
+    <table class="table" id="admin-table">
+        <thead>
+            <tr><th>Name</th><th>Rolle</th><th>Letzter Login</th><th>Status</th><th>Aktion</th></tr>
+        </thead>
+        <tbody>
+        {% for a in admin_liste %}
+            <tr>
+                <td>{{ a.name }}</td>
+                <td>
+                    <span class="rolle-badge rolle-{{ a.rolle }}">
+                        {{ "Haupt-Admin" if a.rolle == "admin" else "Manager" }}
+                    </span>
+                </td>
+                <td>{{ a.letzter_login|datum }}</td>
+                <td>{% if a.gesperrt %}<span class="badge-gesperrt">Gesperrt</span>{% else %}<span class="badge-aktiv">Aktiv</span>{% endif %}</td>
+                <td>
+                    {% if a.name != admin_name %}
+                    <div class="inline-form" style="gap:4px">
+                        {% if a.gesperrt %}
+                        <form method="post" class="inline-form">
+                            <input type="hidden" name="aktion" value="konto_entsperren">
+                            <input type="hidden" name="login_name" value="{{ a.name }}">
+                            <button class="btn btn-small" type="submit">Entsperren</button>
+                        </form>
+                        {% else %}
+                        <form method="post" class="inline-form" onsubmit="return confirm('{{ a.name }} sperren?');">
+                            <input type="hidden" name="aktion" value="konto_sperren">
+                            <input type="hidden" name="login_name" value="{{ a.name }}">
+                            <button class="btn btn-danger btn-small" type="submit">Sperren</button>
+                        </form>
+                        {% endif %}
+                        <form method="post" class="inline-form" onsubmit="return confirm('{{ a.name }} entfernen?');">
+                            <input type="hidden" name="aktion" value="admin_entfernen">
+                            <input type="hidden" name="login_name" value="{{ a.name }}">
+                            <button class="btn btn-danger btn-small" type="submit">Entfernen</button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <em class="meta">Du</em>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty">Noch keine Logins aufgezeichnet.</p>
+    {% endif %}
+</section>
+
+{% endif %}{# end admin-only #}
+
+<script>
+document.querySelectorAll('.search-input').forEach(function(input) {
+    input.addEventListener('input', function() {
+        var q = input.value.trim().toLowerCase();
+        var table = document.getElementById(input.dataset.searchTable);
+        if (!table) return;
+        table.querySelectorAll('tbody tr').forEach(function(row) {
+            row.style.display = (!q || row.textContent.toLowerCase().indexOf(q) !== -1) ? '' : 'none';
+        });
+    });
+});
+</script>
+{% endblock %}
