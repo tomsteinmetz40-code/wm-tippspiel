@@ -6,8 +6,8 @@ from flask import Flask, g, render_template, request, redirect, url_for, flash, 
 
 APP_DIR          = os.path.dirname(os.path.abspath(__file__))
 DB_PATH          = os.path.join(APP_DIR, "tipps.db")
-ADMIN_PASSWORT   = os.environ.get("ADMIN_PASSWORT",   "admin123")
-MANAGER_PASSWORT = os.environ.get("MANAGER_PASSWORT", "manager")
+ADMIN_PASSWORT   = os.environ.get("ADMIN_PASSWORT",   "AdminTom")
+MANAGER_PASSWORT = os.environ.get("MANAGER_PASSWORT", "Mananger-gms!")
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "wm-tipp-geheim")
